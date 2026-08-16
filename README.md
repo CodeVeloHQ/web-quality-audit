@@ -14,6 +14,8 @@ produce JSON and Markdown reports suitable for continuous delivery.
 - Performance, accessibility, best-practices, and SEO score budgets
 - Core Web Vitals and supporting metric budgets
 - Baseline regression checks
+- Median aggregation across repeated runs, with warmup and cooldown controls
+- Optional request blocking for analytics and other test-only third parties
 - JSON and Markdown reports
 - Automatic GitHub job-summary output
 - Configuration-only validation for pull-request checks
@@ -41,6 +43,22 @@ Run an audit:
 ```shell
 npm run audit -- --config config.example.yaml
 ```
+
+For performance decisions, use repeated measurements rather than a single Lighthouse score:
+
+```yaml
+settings:
+  runs: 5
+  warmup_runs: 1
+  delay_between_runs_ms: 1500
+  blocked_url_patterns:
+    - "*://tracking.example.com/*"
+```
+
+Warmup runs are discarded. Budgets and regression checks are evaluated against the median of
+the measured runs, while the JSON and Markdown reports retain every sample and its observed
+range. Only block third-party requests when the purpose of the test is first-party application
+performance; keep a separate end-to-end profile that includes production analytics.
 
 Reports are written to `reports/web-quality-report.json` and
 `reports/web-quality-report.md` by default. A failed budget or regression produces exit

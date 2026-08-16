@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { evaluateBudgets, evaluateRegression } from "../src/evaluate.js";
+import { aggregateLighthouseResults, evaluateBudgets, evaluateRegression } from "../src/evaluate.js";
 
 const result = {
   scores: { performance: 0.88, accessibility: 0.97 },
@@ -38,3 +38,27 @@ test("accepts results inside budgets", () => {
   assert.deepEqual(failures, []);
 });
 
+test("aggregates repeated Lighthouse samples with medians and ranges", () => {
+  const lhrs = [80, 95, 90].map((performance, index) => ({
+    finalDisplayedUrl: "https://example.com/",
+    fetchTime: `2026-08-16T00:00:0${index}.000Z`,
+    lighthouseVersion: "13.4.1",
+    categories: { performance: { score: performance / 100 } },
+    audits: {
+      "largest-contentful-paint": { numericValue: [3200, 2200, 2500][index] },
+      "total-blocking-time": { numericValue: [400, 100, 200][index] }
+    }
+  }));
+  const aggregate = aggregateLighthouseResults(lhrs, {
+    name: "Example",
+    url: "https://example.com/"
+  });
+  assert.equal(aggregate.sampleCount, 3);
+  assert.equal(aggregate.scores.performance, 0.9);
+  assert.equal(aggregate.metrics["largest-contentful-paint"], 2500);
+  assert.deepEqual(aggregate.variability.metrics["total-blocking-time"], {
+    min: 100,
+    max: 400
+  });
+  assert.equal(aggregate.samples.length, 3);
+});

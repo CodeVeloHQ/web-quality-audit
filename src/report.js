@@ -32,6 +32,12 @@ export function createMarkdownReport(report) {
 
   for (const entry of report.results) {
     lines.push(`## ${entry.name}`, "", `[${entry.finalUrl}](${entry.finalUrl})`, "");
+    if (entry.sampleCount > 1) {
+      lines.push(
+        `Reported values are the ${entry.aggregation} of ${entry.sampleCount} measured runs.`,
+        ""
+      );
+    }
     lines.push("| Category | Score |", "| --- | ---: |");
     for (const [id, value] of Object.entries(entry.scores)) {
       lines.push(`| ${LABELS[id] ?? id} | ${score(value)} |`);
@@ -41,6 +47,15 @@ export function createMarkdownReport(report) {
       lines.push(`| ${LABELS[id] ?? id} | ${metric(id, value)} |`);
     }
     lines.push("");
+    if (entry.samples?.length > 1) {
+      lines.push("### Samples", "", "| Run | Performance | LCP | TBT |", "| ---: | ---: | ---: | ---: |");
+      entry.samples.forEach((sample, index) => {
+        lines.push(
+          `| ${index + 1} | ${score(sample.scores.performance)} | ${metric("largest-contentful-paint", sample.metrics["largest-contentful-paint"])} | ${metric("total-blocking-time", sample.metrics["total-blocking-time"])} |`
+        );
+      });
+      lines.push("");
+    }
     if (entry.failures.length) {
       lines.push("### Failures", "");
       for (const failure of entry.failures) lines.push(`- ${failure.message}`);
@@ -49,4 +64,3 @@ export function createMarkdownReport(report) {
   }
   return `${lines.join("\n")}\n`;
 }
-

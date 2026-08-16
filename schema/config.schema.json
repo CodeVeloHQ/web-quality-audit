@@ -25,7 +25,14 @@
       "additionalProperties": false,
       "properties": {
         "output_directory": { "type": "string", "minLength": 1 },
-        "chrome_flags": { "type": "array", "items": { "type": "string" } }
+        "chrome_flags": { "type": "array", "items": { "type": "string" } },
+        "runs": { "type": "integer", "minimum": 1, "maximum": 20 },
+        "warmup_runs": { "type": "integer", "minimum": 0, "maximum": 10 },
+        "delay_between_runs_ms": { "type": "integer", "minimum": 0, "maximum": 60000 },
+        "blocked_url_patterns": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        }
       }
     },
     "budgets": {
@@ -52,4 +59,3 @@
     }
   }
 }
-

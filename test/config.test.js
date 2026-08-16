@@ -12,6 +12,32 @@ test("normalizes a valid configuration", () => {
   const config = validateConfig(valid);
   assert.equal(config.targets[0].url, "https://example.com/");
   assert.equal(config.regression.maximumScoreDrop, 0.05);
+  assert.equal(config.settings.runs, 1);
+  assert.equal(config.settings.warmupRuns, 0);
+});
+
+test("normalizes repeat-run settings", () => {
+  const config = validateConfig({
+    ...valid,
+    settings: {
+      runs: 5,
+      warmup_runs: 1,
+      delay_between_runs_ms: 1500,
+      blocked_url_patterns: ["*://tracking.example.com/*"]
+    }
+  });
+  assert.equal(config.settings.runs, 5);
+  assert.equal(config.settings.warmupRuns, 1);
+  assert.equal(config.settings.delayBetweenRunsMs, 1500);
+  assert.deepEqual(config.settings.blockedUrlPatterns, ["*://tracking.example.com/*"]);
+});
+
+test("rejects invalid repeat-run settings", () => {
+  assert.throws(() => validateConfig({ ...valid, settings: { runs: 0 } }), /settings.runs/);
+  assert.throws(
+    () => validateConfig({ ...valid, settings: { warmup_runs: 1.5 } }),
+    /must be an integer/
+  );
 });
 
 test("rejects non-web protocols", () => {
@@ -27,4 +53,3 @@ test("rejects unsupported budget names", () => {
     /Unsupported score budget/
   );
 });
-

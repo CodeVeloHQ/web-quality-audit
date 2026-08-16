@@ -6,6 +6,10 @@ targets:
 
 settings:
   output_directory: reports
+  runs: 5
+  warmup_runs: 1
+  delay_between_runs_ms: 1500
+  blocked_url_patterns: []
   chrome_flags:
     - --headless
     - --no-sandbox

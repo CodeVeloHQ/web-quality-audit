@@ -24,6 +24,11 @@ function assertNumber(value, label, minimum, maximum = Number.POSITIVE_INFINITY)
   }
 }
 
+function assertInteger(value, label, minimum, maximum) {
+  assertNumber(value, label, minimum, maximum);
+  if (!Number.isInteger(value)) throw new Error(`${label} must be an integer`);
+}
+
 export function validateConfig(raw) {
   assertObject(raw, "Configuration");
   if (raw.version !== 1) throw new Error("Configuration version must be 1");
@@ -79,13 +84,30 @@ export function validateConfig(raw) {
   if (!Array.isArray(chromeFlags) || chromeFlags.some((flag) => typeof flag !== "string")) {
     throw new Error("settings.chrome_flags must be an array of strings");
   }
+  const runs = settings.runs ?? 1;
+  const warmupRuns = settings.warmup_runs ?? 0;
+  const delayBetweenRunsMs = settings.delay_between_runs_ms ?? 0;
+  assertInteger(runs, "settings.runs", 1, 20);
+  assertInteger(warmupRuns, "settings.warmup_runs", 0, 10);
+  assertInteger(delayBetweenRunsMs, "settings.delay_between_runs_ms", 0, 60000);
+  const blockedUrlPatterns = settings.blocked_url_patterns ?? [];
+  if (
+    !Array.isArray(blockedUrlPatterns) ||
+    blockedUrlPatterns.some((pattern) => typeof pattern !== "string" || pattern.trim() === "")
+  ) {
+    throw new Error("settings.blocked_url_patterns must be an array of non-empty strings");
+  }
 
   return {
     version: 1,
     targets,
     settings: {
       outputDirectory: settings.output_directory ?? "reports",
-      chromeFlags
+      chromeFlags,
+      runs,
+      warmupRuns,
+      delayBetweenRunsMs,
+      blockedUrlPatterns
     },
     budgets: { scores, metrics },
     regression: { maximumScoreDrop, maximumMetricIncreasePercent }
@@ -97,4 +119,3 @@ export async function loadConfig(filePath) {
   const content = await readFile(absolutePath, "utf8");
   return validateConfig(YAML.parse(content));
 }
-

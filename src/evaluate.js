@@ -33,6 +33,56 @@ export function normalizeLighthouseResult(lhr, target) {
   };
 }
 
+function median(values) {
+  const sorted = [...values].sort((left, right) => left - right);
+  const middle = Math.floor(sorted.length / 2);
+  return sorted.length % 2 === 0
+    ? (sorted[middle - 1] + sorted[middle]) / 2
+    : sorted[middle];
+}
+
+function aggregateGroup(samples, property) {
+  const ids = new Set(samples.flatMap((sample) => Object.keys(sample[property])));
+  const aggregate = {};
+  const ranges = {};
+  for (const id of ids) {
+    const values = samples
+      .map((sample) => sample[property][id])
+      .filter((value) => typeof value === "number");
+    if (values.length !== samples.length) continue;
+    aggregate[id] = median(values);
+    ranges[id] = { min: Math.min(...values), max: Math.max(...values) };
+  }
+  return { aggregate, ranges };
+}
+
+export function aggregateLighthouseResults(lhrs, target) {
+  if (!Array.isArray(lhrs) || lhrs.length === 0) {
+    throw new Error(`No Lighthouse samples are available for ${target.url}`);
+  }
+  const samples = lhrs.map((lhr) => normalizeLighthouseResult(lhr, target));
+  const scores = aggregateGroup(samples, "scores");
+  const metrics = aggregateGroup(samples, "metrics");
+  const last = samples.at(-1);
+  return {
+    name: target.name,
+    requestedUrl: target.url,
+    finalUrl: last.finalUrl,
+    fetchedAt: last.fetchedAt,
+    lighthouseVersion: last.lighthouseVersion,
+    sampleCount: samples.length,
+    aggregation: "median",
+    scores: scores.aggregate,
+    metrics: metrics.aggregate,
+    variability: { scores: scores.ranges, metrics: metrics.ranges },
+    samples: samples.map(({ fetchedAt, scores: sampleScores, metrics: sampleMetrics }) => ({
+      fetchedAt,
+      scores: sampleScores,
+      metrics: sampleMetrics
+    }))
+  };
+}
+
 export function evaluateBudgets(result, budgets) {
   const failures = [];
   for (const [id, minimum] of Object.entries(budgets.scores)) {
@@ -97,4 +147,3 @@ export function evaluateRegression(result, baseline, limits) {
   }
   return failures;
 }
-

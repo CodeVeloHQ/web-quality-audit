@@ -4,7 +4,7 @@ import { appendFile, mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import process from "node:process";
 import { loadConfig } from "./config.js";
-import { evaluateBudgets, evaluateRegression, normalizeLighthouseResult } from "./evaluate.js";
+import { aggregateLighthouseResults, evaluateBudgets, evaluateRegression } from "./evaluate.js";
 import { auditTargets } from "./lighthouse.js";
 import { createMarkdownReport } from "./report.js";
 
@@ -66,8 +66,8 @@ export async function main(argv = process.argv.slice(2)) {
     chromePath: args.chromePath ?? process.env.CHROME_PATH,
     verbose: args.verbose
   });
-  const results = rawResults.map(({ target, lhr }) => {
-    const normalized = normalizeLighthouseResult(lhr, target);
+  const results = rawResults.map(({ target, lhrs }) => {
+    const normalized = aggregateLighthouseResults(lhrs, target);
     const failures = [
       ...evaluateBudgets(normalized, config.budgets),
       ...evaluateRegression(normalized, baselines.get(normalized.requestedUrl), config.regression)
