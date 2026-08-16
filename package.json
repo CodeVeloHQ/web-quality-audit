@@ -1,0 +1,44 @@
+{
+  "name": "@codevelo/web-quality-audit",
+  "version": "0.1.0",
+  "description": "Budget-driven Lighthouse audits with Markdown and JSON reporting.",
+  "type": "module",
+  "bin": {
+    "web-quality-audit": "src/cli.js"
+  },
+  "scripts": {
+    "audit": "node src/cli.js",
+    "test": "node --test",
+    "check": "node --check src/cli.js && node --check src/config.js && node --check src/evaluate.js && node --check src/lighthouse.js && node --check src/report.js && node --test"
+  },
+  "engines": {
+    "node": ">=22.19"
+  },
+  "keywords": [
+    "lighthouse",
+    "performance-budget",
+    "core-web-vitals",
+    "accessibility",
+    "web-quality"
+  ],
+  "license": "MIT",
+  "author": "CodeVelo",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CodeVeloHQ/web-quality-audit.git"
+  },
+  "bugs": {
+    "url": "https://github.com/CodeVeloHQ/web-quality-audit/issues"
+  },
+  "homepage": "https://github.com/CodeVeloHQ/web-quality-audit#readme",
+  "files": [
+    "src",
+    "schema",
+    "config.example.yaml"
+  ],
+  "dependencies": {
+    "chrome-launcher": "1.2.1",
+    "lighthouse": "13.4.1",
+    "yaml": "2.9.0"
+  }
+}

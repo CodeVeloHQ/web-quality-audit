@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/CodeVeloHQ/web-quality-audit/schema/config.schema.json",
+  "title": "Web Quality Audit configuration",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "targets", "budgets"],
+  "properties": {
+    "version": { "const": 1 },
+    "targets": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "url"],
+        "properties": {
+          "name": { "type": "string", "minLength": 1 },
+          "url": { "type": "string", "format": "uri", "pattern": "^https?://" }
+        }
+      }
+    },
+    "settings": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "output_directory": { "type": "string", "minLength": 1 },
+        "chrome_flags": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "budgets": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "scores": {
+          "type": "object",
+          "additionalProperties": { "type": "number", "minimum": 0, "maximum": 1 }
+        },
+        "metrics": {
+          "type": "object",
+          "additionalProperties": { "type": "number", "minimum": 0 }
+        }
+      }
+    },
+    "regression": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "maximum_score_drop": { "type": "number", "minimum": 0, "maximum": 1 },
+        "maximum_metric_increase_percent": { "type": "number", "minimum": 0 }
+      }
+    }
+  }
+}
+

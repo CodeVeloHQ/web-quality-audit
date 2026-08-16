@@ -1,0 +1,30 @@
+name: CodeVelo Web Quality Audit
+description: Run Lighthouse audits and enforce web-quality budgets.
+author: CodeVelo
+branding:
+  icon: activity
+  color: blue
+inputs:
+  config:
+    description: Path to the audit configuration file.
+    required: false
+    default: web-quality-audit.yaml
+  baseline:
+    description: Optional previous JSON report used for regression checks.
+    required: false
+    default: ""
+  output:
+    description: Directory for JSON and Markdown reports.
+    required: false
+    default: reports
+runs:
+  using: docker
+  image: Dockerfile
+  args:
+    - --config
+    - ${{ inputs.config }}
+    - --baseline
+    - ${{ inputs.baseline }}
+    - --output
+    - ${{ inputs.output }}
+

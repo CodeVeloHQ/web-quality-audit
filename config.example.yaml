@@ -1,0 +1,25 @@
+version: 1
+
+targets:
+  - name: Example homepage
+    url: https://example.com/
+
+settings:
+  output_directory: reports
+  chrome_flags:
+    - --headless
+    - --no-sandbox
+
+budgets:
+  scores:
+    performance: 0.90
+    accessibility: 0.95
+    best-practices: 0.90
+    seo: 0.80
+  metrics:
+    largest-contentful-paint: 2500
+    cumulative-layout-shift: 0.10
+
+regression:
+  maximum_score_drop: 0.05
+  maximum_metric_increase_percent: 10
